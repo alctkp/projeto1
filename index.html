@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz da Banda Lamp</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f8e8d5, #d5e8df);
+            color: #34483f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fffaf3;
+            width: 100%;
+            max-width: 600px;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px #34483f20;
+        }
+
+        h1 {
+            text-align: center;
+            color: #527663;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .progress {
+            height: 8px;
+            background: #e5e0d5;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: #79a58a;
+            transition: width 0.3s;
+        }
+
+        #contador {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        #pergunta {
+            font-size: 21px;
+            margin-bottom: 22px;
+            line-height: 1.4;
+        }
+
+        .opcao {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            background: #f4eee3;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 16px;
+            color: #34483f;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .opcao:hover:not(:disabled) {
+            border-color: #79a58a;
+            background: #e7f0e8;
+        }
+
+        .opcao:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+
+        .correta {
+            background: #d8edda !important;
+            border-color: #4b9b60 !important;
+        }
+
+        .errada {
+            background: #f8dddd !important;
+            border-color: #cf6b6b !important;
+        }
+
+        #feedback {
+            margin: 18px 0;
+            line-height: 1.5;
+            min-height: 24px;
+        }
+
+        .principal {
+            width: 100%;
+            padding: 14px;
+            background: #527663;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .principal:hover {
+            background: #3c5d4b;
+        }
+
+        #resultado {
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        #resultado h2 {
+            color: #527663;
+            margin-bottom: 15px;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>☁️ Quiz da Lamp</h1>
+        <p class="subtitle">
+            Teste seus conhecimentos sobre a banda japonesa!
+        </p>
+
+        <section id="jogo">
+            <div class="progress">
+                <div class="progress-bar" id="barra"></div>
+            </div>
+
+            <p id="contador"></p>
+            <h2 id="pergunta"></h2>
+
+            <div id="opcoes"></div>
+
+            <p id="feedback" aria-live="polite"></p>
+
+            <button
+                class="principal"
+                id="proximo"
+                onclick="proximaPergunta()"
+                disabled
+            >
+                Próxima pergunta →
+            </button>
+        </section>
+
+        <section id="resultado" class="oculto" aria-live="polite">
+            <h2>Fim do quiz! 🎵</h2>
+            <p id="pontuacao"></p>
+            <p id="mensagem"></p>
+
+            <button class="principal" onclick="reiniciar()">
+                Jogar novamente
+            </button>
+        </section>
+
+        <footer>
+            Feito para quem ama a música da Lamp ♡
+        </footer>
+    </main>
+
+    <script>
+        const perguntas = [
+            {
+                pergunta: "1. A banda Lamp é originária de qual país?",
+                opcoes: ["Coreia do Sul", "Japão", "China", "Tailândia"],
+                correta: 1,
+                explicacao: "Isso mesmo! Lamp é uma banda japonesa."
+            },
+            {
+                pergunta: "2. Em que ano a banda Lamp foi formada?",
+                opcoes: ["1995", "2005", "2000", "2010"],
+                correta: 2,
+                explicacao: "A banda foi formada no ano 2000."
+            },
+            {
+                pergunta: "3. Qual destes álbuns da Lamp foi lançado em 2004?",
+                opcoes: [
+                    "For Lovers",
+                    "Yume",
+                    "Lamp",
+                    "Tokyo Utopia Tsushin"
+                ],
+                correta: 0,
+                explicacao: "For Lovers foi lançado em 2004."
+            },
+            {
+                pergunta: "4. Qual estilo musical está associado à Lamp?",
+                opcoes: [
+                    "Heavy metal",
+                    "Punk rock",
+                    "Música eletrônica industrial",
+                    "Pop japonês com influências de jazz e bossa nova"
+                ],
+                correta: 3,
+                explicacao: "A sonoridade da Lamp mistura pop japonês com influências de jazz, bossa nova e outros estilos."
+            },
+            {
+                pergunta: "5. Qual álbum da Lamp foi lançado em 2014?",
+                opcoes: [
+                    "For Lovers",
+                    "Yume",
+                    "Lamp",
+                    "Soyokaze Apartment 201"
+                ],
+                correta: 1,
+                explicacao: "Yume foi lançado em 2014."
+            },
+            {
+                pergunta: "6. Qual destes nomes faz parte da formação da Lamp?",
+                opcoes: [
+                    "Hikaru Utada",
+                    "Ado",
+                    "Kaori Sakakibara",
+                    "Miku Hatsune"
+                ],
+                correta: 2,
+                explicacao: "Kaori Sakakibara é uma das integrantes da banda."
+            },
+            {
+                pergunta: "7. Em que ano foi lançado o álbum Tokyo Utopia Tsushin?",
+                opcoes: ["2018", "2012", "2020", "2008"],
+                correta: 0,
+                explicacao: "Tokyo Utopia Tsushin foi lançado em 2018."
+            },
+            {
+                pergunta: "8. Qual destas características combina com a música da Lamp?",
+                opcoes: [
+                    "Ritmos exclusivamente pesados e agressivos",
+                    "Apenas trilhas sonoras de videogames",
+                    "Som baseado somente em música clássica",
+                    "Atmosferas suaves, melódicas e nostálgicas"
+                ],
+                correta: 3,
+                explicacao: "A Lamp é conhecida por músicas melódicas, delicadas e com uma atmosfera nostálgica."
+            }
+        ];
+
+        let indice = 0;
+        let pontos = 0;
+        let respondeu = false;
+
+        function mostrarPergunta() {
+            respondeu = false;
+
+            const atual = perguntas[indice];
+
+            document.getElementById("contador").textContent =
+                `Pergunta ${indice + 1} de ${perguntas.length}`;
+
+            document.getElementById("barra").style.width =
+                `${(indice / perguntas.length) * 100}%`;
+
+            document.getElementById("pergunta").textContent =
+                atual.pergunta;
+
+            document.getElementById("feedback").textContent = "";
+
+            document.getElementById("proximo").disabled = true;
+
+            document.getElementById("proximo").textContent =
+                indice === perguntas.length - 1
+                    ? "Ver resultado"
+                    : "Próxima pergunta →";
+
+            const area = document.getElementById("opcoes");
+            area.innerHTML = "";
+
+            atual.opcoes.forEach((opcao, i) => {
+                const botao = document.createElement("button");
+
+                botao.className = "opcao";
+                botao.textContent = opcao;
+                botao.onclick = () => verificarResposta(i);
+
+                area.appendChild(botao);
+            });
+        }
+
+        function verificarResposta(escolha) {
+            if (respondeu) return;
+
+            respondeu = true;
+
+            const atual = perguntas[indice];
+            const botoes = document.querySelectorAll(".opcao");
+
+            botoes.forEach((botao, i) => {
+                botao.disabled = true;
+
+                if (i === atual.correta) {
+                    botao.classList.add("correta");
+                }
+            });
+
+            if (escolha === atual.correta) {
+                pontos++;
+
+                document.getElementById("feedback").textContent =
+                    "✓ Resposta correta! " + atual.explicacao;
+            } else {
+                botoes[escolha].classList.add("errada");
+
+                document.getElementById("feedback").textContent =
+                    "✗ Não foi dessa vez! " + atual.explicacao;
+            }
+
+            document.getElementById("proximo").disabled = false;
+            document.getElementById("barra").style.width =
+                `${((indice + 1) / perguntas.length) * 100}%`;
+        }
+
+        function proximaPergunta() {
+            if (!respondeu) return;
+
+            indice++;
+
+            if (indice < perguntas.length) {
+                mostrarPergunta();
+            } else {
+                mostrarResultado();
+            }
+        }
+
+        function mostrarResultado() {
+            document.getElementById("jogo").classList.add("oculto");
+            document.getElementById("resultado").classList.remove("oculto");
+
+            document.getElementById("pontuacao").textContent =
+                `Você acertou ${pontos} de ${perguntas.length} perguntas!`;
+
+            let mensagem;
+
+            if (pontos === perguntas.length) {
+                mensagem = "Incrível! Você é um verdadeiro fã da Lamp! 🌟";
+            } else if (pontos >= 5) {
+                mensagem = "Muito bem! Você conhece bastante a banda! 🎶";
+            } else if (pontos >= 3) {
+                mensagem = "Bom trabalho! Que tal ouvir mais algumas músicas?";
+            } else {
+                mensagem = "Que tal conhecer os álbuns da Lamp e tentar novamente?";
+            }
+
+            document.getElementById("mensagem").textContent = mensagem;
+        }
+
+        function reiniciar() {
+            indice = 0;
+            pontos = 0;
+
+            document.getElementById("resultado").classList.add("oculto");
+            document.getElementById("jogo").classList.remove("oculto");
+
+            mostrarPergunta();
+        }
+
+        mostrarPergunta();
+    </script>
+</body>
+</html>
